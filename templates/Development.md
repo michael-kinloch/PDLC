@@ -127,6 +127,158 @@ Perform a security review of this code and identify potential vulnerabilities (i
 
 ---
 
+## SpecKit Integration (Spec-Driven Development)
+
+> **📋 GitHub SpecKit**: This section integrates [GitHub SpecKit](https://github.com/github/spec-kit) for spec-driven development with AI agents. SpecKit ensures predictable outcomes by making specifications executable artifacts that drive implementation.
+
+### SpecKit Workflow Commands
+
+Use these slash commands with your AI coding agent (Copilot, Claude Code, Cursor, etc.):
+
+| Command | Purpose | When to Use |
+|---------|---------|-------------|
+| `/speckit.constitution` | Define project principles and guidelines | Project setup, governance updates |
+| `/speckit.specify` | Create feature specification (what & why) | Before implementation planning |
+| `/speckit.plan` | Generate technical implementation plan | After spec approval |
+| `/speckit.tasks` | Break down plan into actionable tasks | After plan review |
+| `/speckit.implement` | Execute tasks according to plan | Development phase |
+
+### Feature Specification Template
+
+For each feature, create a spec following this structure:
+
+```markdown
+# Feature Specification: [FEATURE NAME]
+
+**Feature Branch**: `[###-feature-name]`  
+**Created**: [DATE]  
+**Status**: Draft | In Review | Approved
+
+## User Scenarios & Testing
+
+### User Story 1 - [Title] (Priority: P1)
+[Description of user journey]
+
+**Acceptance Scenarios**:
+1. **Given** [state], **When** [action], **Then** [outcome]
+
+## Requirements
+
+### Functional Requirements
+- **FR-001**: System MUST [capability]
+- **FR-002**: Users MUST be able to [action]
+
+### Key Entities
+- **[Entity]**: [Description, attributes, relationships]
+
+## Success Criteria
+- **SC-001**: [Measurable outcome]
+```
+
+### Implementation Plan Template
+
+```markdown
+# Implementation Plan: [FEATURE]
+
+**Branch**: `[###-feature-name]` | **Date**: [DATE]
+
+## Technical Context
+**Language/Version**: [e.g., Python 3.11, TypeScript 5.0]  
+**Primary Dependencies**: [e.g., FastAPI, React]  
+**Storage**: [e.g., PostgreSQL, MongoDB]  
+**Testing**: [e.g., pytest, Jest]
+
+## Project Structure
+[Define source layout per project type]
+
+## Constitution Check
+[Validate against project principles]
+```
+
+### Task Breakdown Template
+
+```markdown
+# Tasks: [FEATURE NAME]
+
+## Phase 1: Setup
+- [ ] T001 Create project structure
+- [ ] T002 Initialize dependencies
+
+## Phase 2: User Story 1 (Priority: P1) 🎯 MVP
+**Goal**: [What this story delivers]
+
+### Implementation
+- [ ] T003 [P] Create [Entity] model in src/models/
+- [ ] T004 Implement [Service] in src/services/
+- [ ] T005 Add [endpoint] in src/api/
+
+**Checkpoint**: User Story 1 functional and testable
+```
+
+### SpecKit Agent Prompts
+
+#### Specify a Feature
+```
+/speckit.specify Build [feature description]. It should allow users to [key capabilities]. 
+Focus on [primary user value]. Include [specific requirements].
+```
+
+#### Create Implementation Plan
+```
+/speckit.plan Using [technology stack]. The application should [architectural approach]. 
+Use [database/storage]. Follow [coding standards/patterns].
+```
+
+#### Generate Tasks
+```
+/speckit.tasks Break down the implementation plan into actionable tasks organized by user story.
+Include parallel task markers [P] and checkpoints for each story.
+```
+
+#### Execute Implementation
+```
+/speckit.implement Execute tasks in order, respecting dependencies. 
+Commit after each logical task group. Validate at each checkpoint.
+```
+
+### SpecKit Feature Tracker
+
+| Feature ID | Feature Name | Spec Status | Plan Status | Tasks Status | Implementation |
+|------------|--------------|-------------|-------------|--------------|----------------|
+| 001 | | Draft / Approved | Draft / Approved | Generated / In Progress | Not Started / In Progress / Complete |
+| 002 | | Draft / Approved | Draft / Approved | Generated / In Progress | Not Started / In Progress / Complete |
+
+### SpecKit Directory Structure
+
+```
+.specify/
+├── memory/
+│   └── constitution.md      # Project principles and guidelines
+├── specs/
+│   └── [###-feature-name]/
+│       ├── spec.md          # Feature specification
+│       ├── plan.md          # Implementation plan
+│       ├── tasks.md         # Task breakdown
+│       ├── research.md      # Technical research
+│       └── data-model.md    # Entity definitions
+└── templates/
+    ├── spec-template.md
+    ├── plan-template.md
+    └── tasks-template.md
+```
+
+### SpecKit Checklist
+
+- [ ] Project constitution defined (`.specify/memory/constitution.md`)
+- [ ] Feature specification created and reviewed
+- [ ] Technical plan approved by architect
+- [ ] Tasks generated and prioritized
+- [ ] User stories independently testable
+- [ ] Implementation follows task order
+- [ ] Checkpoints validated at each story completion
+
+---
+
 ## Development Checklist
 
 ### Pre-Development
