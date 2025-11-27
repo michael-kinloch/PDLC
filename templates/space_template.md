@@ -1,7 +1,0 @@
-# Space Template
-
-## Overview
-...
-
-## Purpose
-...
