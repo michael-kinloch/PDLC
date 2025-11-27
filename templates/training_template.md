@@ -1,7 +1,0 @@
-# Training Template
-
-## Goals
-...
-
-## Agenda
-...
