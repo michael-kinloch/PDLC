@@ -1,0 +1,7 @@
+# Pilot Template
+
+## Objectives
+...
+
+## Evaluation
+...
