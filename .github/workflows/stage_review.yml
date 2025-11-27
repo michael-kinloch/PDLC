@@ -1,0 +1,177 @@
+# Stage Review Workflow for AI-Native PDLC Process
+# This workflow automates PR review assignment and reminders based on PDLC stage templates
+
+name: PDLC Stage Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'templates/Discovery.md'
+      - 'templates/Design.md'
+      - 'templates/Development.md'
+      - 'templates/Testing.md'
+      - 'templates/Release.md'
+      - 'templates/Maintenance.md'
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  assign-reviewers:
+    name: Assign Stage Reviewers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            templates/Discovery.md
+            templates/Design.md
+            templates/Development.md
+            templates/Testing.md
+            templates/Release.md
+            templates/Maintenance.md
+
+      - name: Determine reviewers and labels
+        id: reviewers
+        run: |
+          REVIEWERS=""
+          LABELS=""
+          COMMENT=""
+          
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            case "$file" in
+              "templates/Discovery.md")
+                REVIEWERS="${REVIEWERS:+$REVIEWERS,}product-owner"
+                LABELS="${LABELS:+$LABELS,}pdlc:discovery"
+                COMMENT="${COMMENT}### 📋 Discovery Phase Review Required\n\n**Reviewer:** Product Owner\n\n**Review Focus:**\n- Business need clarity\n- Stakeholder identification\n- Success criteria completeness\n\n---\n\n"
+                ;;
+              "templates/Design.md")
+                REVIEWERS="${REVIEWERS:+$REVIEWERS,}architect"
+                LABELS="${LABELS:+$LABELS,}pdlc:design"
+                COMMENT="${COMMENT}### 🏗️ Design Phase Review Required\n\n**Reviewer:** Architect\n\n**Review Focus:**\n- Solution architecture soundness\n- Design decision rationale\n- Non-functional requirements coverage\n\n---\n\n"
+                ;;
+              "templates/Development.md")
+                REVIEWERS="${REVIEWERS:+$REVIEWERS,}developer"
+                LABELS="${LABELS:+$LABELS,}pdlc:development"
+                COMMENT="${COMMENT}### 💻 Development Phase Review Required\n\n**Reviewer:** Developer\n\n**Review Focus:**\n- Code standards compliance\n- Implementation details accuracy\n- Development checklist completeness\n\n---\n\n"
+                ;;
+              "templates/Testing.md")
+                REVIEWERS="${REVIEWERS:+$REVIEWERS,}qa-lead"
+                LABELS="${LABELS:+$LABELS,}pdlc:testing"
+                COMMENT="${COMMENT}### 🧪 Testing Phase Review Required\n\n**Reviewer:** QA Lead\n\n**Review Focus:**\n- Test plan coverage\n- QA checklist completeness\n- Quality metrics adequacy\n\n---\n\n"
+                ;;
+              "templates/Release.md")
+                REVIEWERS="${REVIEWERS:+$REVIEWERS,}release-manager"
+                LABELS="${LABELS:+$LABELS,}pdlc:release"
+                COMMENT="${COMMENT}### 🚀 Release Phase Review Required\n\n**Reviewer:** Release Manager\n\n**Review Focus:**\n- Release notes completeness\n- Deployment plan adequacy\n- Rollback plan readiness\n\n---\n\n"
+                ;;
+              "templates/Maintenance.md")
+                REVIEWERS="${REVIEWERS:+$REVIEWERS,}support-lead"
+                LABELS="${LABELS:+$LABELS,}pdlc:maintenance"
+                COMMENT="${COMMENT}### 🔧 Maintenance Phase Review Required\n\n**Reviewer:** Support Lead\n\n**Review Focus:**\n- Operations runbook completeness\n- Issue tracking process\n- Retrospective documentation\n\n---\n\n"
+                ;;
+            esac
+          done
+          
+          echo "reviewers=$REVIEWERS" >> $GITHUB_OUTPUT
+          echo "labels=$LABELS" >> $GITHUB_OUTPUT
+          
+          # Use heredoc for multiline comment
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "comment<<$EOF" >> $GITHUB_OUTPUT
+          echo -e "$COMMENT" >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
+
+      - name: Add labels to PR
+        if: steps.reviewers.outputs.labels != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = '${{ steps.reviewers.outputs.labels }}'.split(',').filter(l => l);
+            if (labels.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: labels
+              });
+            }
+
+      - name: Post review comment
+        if: steps.reviewers.outputs.comment != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = `## 🔍 PDLC Stage Review Notification
+            
+            This PR modifies PDLC stage templates and requires review from the appropriate role owners.
+            
+            ${{ steps.reviewers.outputs.comment }}
+            
+            ### 📌 Review Guidelines
+            
+            1. Review the changes against the stage-specific checklist
+            2. Verify agent prompts are actionable and relevant
+            3. Ensure all required sections are complete
+            4. Approve or request changes with specific feedback
+            
+            ---
+            
+            *This is an automated message from the PDLC Stage Review workflow.*`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+
+      - name: Request reviewers
+        if: steps.reviewers.outputs.reviewers != ''
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const reviewers = '${{ steps.reviewers.outputs.reviewers }}'.split(',').filter(r => r);
+            if (reviewers.length > 0) {
+              try {
+                await github.rest.pulls.requestReviewers({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: context.issue.number,
+                  reviewers: reviewers
+                });
+                console.log(`Requested reviews from: ${reviewers.join(', ')}`);
+              } catch (error) {
+                console.log(`Note: Could not request reviewers. This may be because the users are not collaborators. Error: ${error.message}`);
+              }
+            }
+
+  review-reminder:
+    name: Review Reminder
+    runs-on: ubuntu-latest
+    if: github.event.action == 'opened'
+    steps:
+      - name: Schedule reminder
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Add a reminder label that can be used with scheduled workflows
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['needs-review']
+            });
+            
+            console.log('Added needs-review label for tracking');
