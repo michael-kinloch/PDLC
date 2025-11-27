@@ -31,16 +31,16 @@ Collaborative checklist for planning and tracking the implementation of the hybr
 - [ ] Collect feedback from pilot team
 - [ ] Iterate checklist/process based on feedback
 
-## 5. Full Team Rollout & Continuous Improvement
+## 5. Training
+- [ ] Organize team training sessions
+- [ ] Identify PDLC champions and responsible facilitators
+
+## 6. Full Team Rollout & Continuous Improvement
 - [ ] Launch Copilot Spaces for all relevant teams
 - [ ] Onboard and train remaining team members
 - [ ] Monitor adoption and checklist use
 - [ ] Schedule regular review and improvement sessions
 - [ ] Maintain and update this checklist collaboratively
-
-## 6. Training
-- [ ] Organize team training sessions
-- [ ] Identify PDLC champions and responsible facilitators
 
 ---
 
